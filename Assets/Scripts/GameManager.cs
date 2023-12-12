@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -18,17 +19,30 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private LayerMask mousePlaneLayerMask;
 
+    [SerializeField]
+    private List<Color> _coinColorList;
+
     public event Action OnSelectedPackChoosed;
     public event Action OnNextPackChoosed;
+    public event Action OnNewLevelUnlocked;
+
+    public int GameLevel {  get; private set; }
 
     private bool _isPackSelected;
-    private List<Coin> _selectedCoins = new List<Coin>();
+    private List<CoinObject> _selectedCoinList = new List<CoinObject>();
+    [SerializeField]
+    private List<CoinPack> _fullCoinPackList = new List<CoinPack>();
 
     public static GameManager instance;
 
     private void Awake()
     {
         instance = this;
+    }
+
+    private void Start()
+    {
+        MainButtonUI.instance.OnCoinMerge += MainButtonUI_OnCoinMerge;
     }
 
     private void Update()
@@ -63,9 +77,9 @@ public class GameManager : MonoBehaviour
                     return;
                 }
 
-                SetSelectedCoinList(_nextCoinPack.AddCoins(_selectedCoins));
+                SetSelectedCoinList(_nextCoinPack.AddCoins(_selectedCoinList));
                 
-                _selectedCoinPack.RemoveCoins(_selectedCoins);
+                _selectedCoinPack.RemoveCoins(_selectedCoinList);
                 
 
                 ResetSelections();
@@ -89,7 +103,7 @@ public class GameManager : MonoBehaviour
                     SetSelectedCoinPack(coinPack);
                     SetSelectedCoinList(_selectedCoinPack.SelectCoins());
 
-                    if(_selectedCoins.Count > 0)
+                    if(_selectedCoinList.Count > 0)
                     {
                         _isPackSelected = true;
                     }
@@ -99,6 +113,39 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    private void MainButtonUI_OnCoinMerge()
+    {
+        foreach (CoinPack fullCoinPack in _fullCoinPackList)
+        {
+            int newCoinLevel = 0;
+            Color newCoinColor;
+            if (fullCoinPack.ReturnPackLevel() == GameLevel)
+            {
+                OnNewLevelUnlocked?.Invoke();
+                IncreaseGameLevel();
+                newCoinLevel = GameLevel;
+                newCoinColor = ProduceNewColor();
+            }
+            else
+            {
+                newCoinLevel = fullCoinPack.ReturnPackLevel() + 1;
+                newCoinColor = _coinColorList.ElementAt(newCoinLevel - 1);
+            }
+            foreach (CoinObject coin in fullCoinPack._coinList)
+            {
+                coin.gameObject.SetActive(false);
+            }
+            fullCoinPack._coinList.Clear();
+
+            List<CoinObject> newCoins = CoinInstantiater.instance.InstantiateCoinAfterMerge(newCoinLevel, newCoinColor, fullCoinPack.transform);
+            foreach (CoinObject coin in newCoins)
+            {
+                fullCoinPack.AddNewCoinsAfterMerge(coin);
+            }
+            fullCoinPack.OrganizeCoins();
         }
     }
 
@@ -114,16 +161,33 @@ public class GameManager : MonoBehaviour
         _nextCoinPack = coinPack; 
     }
 
+    private void SetSelectedCoinList(List<CoinObject> coinList)
+    {
+        _selectedCoinList = coinList;
+    }
+
     private void ResetSelections()
     {
         SetSelectedCoinPack(null);
         SetNextCoinPack(null);
         _isPackSelected = false;
-        _selectedCoins.Clear();
+        _selectedCoinList.Clear();
     }
 
-    private void SetSelectedCoinList(List<Coin> coinList)
+    public void IncreaseGameLevel()
     {
-        _selectedCoins = coinList;
+        GameLevel++;
+    }
+
+    public void AddNewPackToList(CoinPack coinPack)
+    {
+        _fullCoinPackList.Add(coinPack);
+    }
+
+    private Color ProduceNewColor()
+    {
+        Color randomColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+
+        return randomColor;
     }
 }

@@ -14,8 +14,8 @@ public class CoinPack : MonoBehaviour
     [SerializeField]
     private Transform coinPivotTransform;
 
-    public List<Coin> _coinList = new List<Coin>(10);
-    private List<Coin> _emptyList = new List<Coin>();
+    public List<CoinObject> _coinList = new List<CoinObject>(10);
+    private List<CoinObject> _emptyList = new List<CoinObject>();
 
     private void Start()
     {
@@ -28,53 +28,64 @@ public class CoinPack : MonoBehaviour
         OrganizeCoins();
     }
 
-    public List<Coin> AddCoins(List<Coin> selectedCoinList)
+    public List<CoinObject> AddCoins(List<CoinObject> selectedCoinList)
     {
         
-        if (_coinList.Count == 10)
-        {
-            return _emptyList;
-        }
+        //if (_coinList.Count == 10)
+        //{
+        //    return _emptyList;
+        //}
 
         if (_coinList.Count != 0 && selectedCoinList[^1].CoinLevel != _coinList[^1].CoinLevel) return _emptyList;
 
         if (_coinList.Count + selectedCoinList.Count > 10)
         {
             int requiredCoinNumber = 10 - _coinList.Count;
-            List<Coin> returnedList = new List<Coin>();
+            List<CoinObject> returnedList = new List<CoinObject>();
             for (int i = 0; i < requiredCoinNumber; i++)
             {
                 _coinList.Add(selectedCoinList[i]);
                 returnedList.Add(selectedCoinList[i]);
             }
             OrganizeCoins();
-            OnPackFull?.Invoke();
+
+            if (IsPackReadyForMerge())
+            {
+                OnPackFull?.Invoke();
+                Debug.Log("EVENT");
+            }
 
             return returnedList;
         }
 
-        foreach (Coin coin in selectedCoinList)
+        foreach (CoinObject coin in selectedCoinList)
         {
             _coinList.Add(coin);
         }
         OrganizeCoins();
 
+        if (IsPackReadyForMerge())
+        {
+            OnPackFull?.Invoke();
+            Debug.Log("EVENT");
+        }
+
         return selectedCoinList;
     }
 
-    public void RemoveCoins(List<Coin> selectedCoinList)
+    public void RemoveCoins(List<CoinObject> selectedCoinList)
     {
         if (_coinList.Count - selectedCoinList.Count < 0) return;
 
-        foreach (Coin coin in selectedCoinList)
+        foreach (CoinObject coin in selectedCoinList)
         {
             _coinList.Remove(coin);
         }
     }
 
-    public List<Coin> SelectCoins()
+    public List<CoinObject> SelectCoins()
     {
-        List<Coin> selectedCoinList = new List<Coin>();
+        List<CoinObject> selectedCoinList = new List<CoinObject>();
 
         if (_coinList.Count < 1) return selectedCoinList;
 
@@ -96,24 +107,43 @@ public class CoinPack : MonoBehaviour
         return selectedCoinList;
     }
 
-    private void OrganizeCoins()
+    public void OrganizeCoins()
     {
         Vector3 coinPosition = coinPivotTransform.position;
         Vector3 offsetBetweenCoins = new Vector3(0f, -0.1f, 0f);
 
-        foreach (Coin coin in _coinList)
+        foreach (CoinObject coin in _coinList)
         {
             coin.Move(coinPosition);
             coinPosition += offsetBetweenCoins;
         }
     }
 
-    private void MergeCoins()
+    private bool IsPackReadyForMerge()
     {
-        int level = _coinList[0].CoinLevel;
-        _coinList.Clear();
+        if (_coinList.Count < 10) return false;
 
-        
+        int lastLevel = _coinList[^1].CoinLevel;
+        foreach (CoinObject coin in _coinList)
+        {
+            if (coin.CoinLevel != lastLevel) return false;
+        }
+        Debug.Log("A");
+        GameManager.instance.AddNewPackToList(this);
+
+        return true;
+    }
+
+    public int ReturnPackLevel()
+    {
+        if (_coinList.Count != 10) return 0;
+
+        return _coinList.ElementAt(0).CoinLevel;
+    }
+
+    public void AddNewCoinsAfterMerge(CoinObject coinObject)
+    {
+        _coinList.Add(coinObject);
     }
 }
 
