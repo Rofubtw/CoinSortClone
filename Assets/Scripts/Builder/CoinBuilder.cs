@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class CoinBuilder : ICoinBuilder
 {
-    private Coin _coin;
+    ICoin _coin;
 
     public CoinBuilder()
     {
         _coin = new Coin();
     }
-
-    public ICoinBuilder SetColor(Color color)
+    
+    public ICoinBuilder SetColor(Colors color)
     {
         _coin.Color = color;
         return this;
@@ -24,7 +21,7 @@ public class CoinBuilder : ICoinBuilder
         return this;
     }
 
-    public Coin Build()
+    public ICoin Build()
     {
         return _coin;
     }

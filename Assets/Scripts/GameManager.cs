@@ -6,16 +6,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
-    private Transform coinPackPrefab;
-
-    [SerializeField]
     private CoinPack _selectedCoinPack;
-    [SerializeField]
     private CoinPack _nextCoinPack;
 
-    [SerializeField]
-    private LayerMask coinPackLayerMask;
     [SerializeField]
     private LayerMask mousePlaneLayerMask;
 
@@ -66,7 +59,8 @@ public class GameManager : MonoBehaviour
     private void HandleCoinTransportation()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, coinPackLayerMask))
+        
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue))
         {
             if (raycastHit.transform.TryGetComponent(out CoinPack coinPack))
             {
@@ -94,7 +88,7 @@ public class GameManager : MonoBehaviour
     private void HandlePackSelection()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, coinPackLayerMask))
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue))
         {
             if (raycastHit.transform.TryGetComponent(out CoinPack coinPack))
             {
@@ -134,11 +128,11 @@ public class GameManager : MonoBehaviour
                 newCoinLevel = fullCoinPack.ReturnPackLevel() + 1;
                 newCoinColor = _coinColorList.ElementAt(newCoinLevel - 1);
             }
-            foreach (CoinObject coin in fullCoinPack._coinList)
+            foreach (CoinObject coin in fullCoinPack.CoinList)
             {
                 coin.gameObject.SetActive(false);
             }
-            fullCoinPack._coinList.Clear();
+            fullCoinPack.CoinList.Clear();
 
             List<CoinObject> newCoins = CoinInstantiater.instance.InstantiateCoinAfterMerge(newCoinLevel, newCoinColor, fullCoinPack.transform);
             foreach (CoinObject coin in newCoins)

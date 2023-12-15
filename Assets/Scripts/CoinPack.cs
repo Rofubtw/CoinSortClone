@@ -1,91 +1,80 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class CoinPack : MonoBehaviour
 {
+    [SerializeField] Transform coinPivotTransform;
+
+    int _capacity = 10;
+    public int EmptySlots => _capacity - _coinList.Count();
+    
+    private List<ICoin> _coinList;
+    
     public event Action OnPackFull;
 
-    [SerializeField]
-    private Transform coinPrefab;
-    [SerializeField]
-    private Transform coinPivotTransform;
-
-    public List<CoinObject> _coinList = new List<CoinObject>(10);
-    private List<CoinObject> _emptyList = new List<CoinObject>();
-
-    private void Start()
+    void Start()
     {
-        CoinDealer.instance.OnCoinDeal += CoinDealer_OnCoinDeal;
-        OrganizeCoins();
+        Init();
+        OrganizeCoins();    
     }
 
-    private void CoinDealer_OnCoinDeal()
+    void Init()
     {
-        OrganizeCoins();
+        _coinList = new List<ICoin>(_capacity);
     }
 
-    public List<CoinObject> AddCoins(List<CoinObject> selectedCoinList)
+    public void AddingProcess(CoinPack senderPack)
     {
+        AddCoinToPackage(senderPack);
+        OrganizeCoins();
+        MergeHandler();
+    }
+    
+    private void AddCoinToPackage(CoinPack senderPack)
+    {
+        List<ICoin> selectedCoinList = senderPack.SelectCoins();
+      
+        if (_coinList.Count != 0)
+        {
+            if (selectedCoinList[^1].CoinLevel != _coinList[^1].CoinLevel) return;
+        }
         
-        //if (_coinList.Count == 10)
-        //{
-        //    return _emptyList;
-        //}
-
-        if (_coinList.Count != 0 && selectedCoinList[^1].CoinLevel != _coinList[^1].CoinLevel) return _emptyList;
-
-        if (_coinList.Count + selectedCoinList.Count > 10)
+        int afterMergeCount = Mathf.Min(_coinList.Count + selectedCoinList.Count, _capacity);
+      
+        int requiredCoinNumber = afterMergeCount - _coinList.Count;
+        for (int i = 0; i < requiredCoinNumber; i++)
         {
-            int requiredCoinNumber = 10 - _coinList.Count;
-            List<CoinObject> returnedList = new List<CoinObject>();
-            for (int i = 0; i < requiredCoinNumber; i++)
-            {
-                _coinList.Add(selectedCoinList[i]);
-                returnedList.Add(selectedCoinList[i]);
-            }
-            OrganizeCoins();
-
-            if (IsPackReadyForMerge())
-            {
-                OnPackFull?.Invoke();
-                Debug.Log("EVENT");
-            }
-
-            return returnedList;
+            ICoin coin = selectedCoinList[i];
+            AddItemToCoinList(coin);
+            senderPack.RemoveItemToCoinList(coin);
         }
+    }
 
-        foreach (CoinObject coin in selectedCoinList)
-        {
-            _coinList.Add(coin);
-        }
-        OrganizeCoins();
-
-        if (IsPackReadyForMerge())
+    private void MergeHandler()
+    {
+        bool isReady = IsPackReadyForMerge();
+        if (isReady)
         {
             OnPackFull?.Invoke();
             Debug.Log("EVENT");
         }
-
-        return selectedCoinList;
     }
 
-    public void RemoveCoins(List<CoinObject> selectedCoinList)
+    public void RemoveCoins(List<ICoin> selectedCoinList)
     {
         if (_coinList.Count - selectedCoinList.Count < 0) return;
 
-        foreach (CoinObject coin in selectedCoinList)
+        foreach (ICoin coin in selectedCoinList)
         {
             _coinList.Remove(coin);
         }
     }
 
-    public List<CoinObject> SelectCoins()
+    public List<ICoin> SelectCoins()
     {
-        List<CoinObject> selectedCoinList = new List<CoinObject>();
+        List<ICoin> selectedCoinList = new List<ICoin>();
 
         if (_coinList.Count < 1) return selectedCoinList;
 
@@ -107,14 +96,14 @@ public class CoinPack : MonoBehaviour
         return selectedCoinList;
     }
 
-    public void OrganizeCoins()
+    private void OrganizeCoins()
     {
         Vector3 coinPosition = coinPivotTransform.position;
         Vector3 offsetBetweenCoins = new Vector3(0f, -0.1f, 0f);
 
-        foreach (CoinObject coin in _coinList)
+        foreach (ICoin coin in _coinList)
         {
-            coin.Move(coinPosition);
+            //coin.Move(coinPosition);
             coinPosition += offsetBetweenCoins;
         }
     }
@@ -129,7 +118,7 @@ public class CoinPack : MonoBehaviour
             if (coin.CoinLevel != lastLevel) return false;
         }
         Debug.Log("A");
-        GameManager.instance.AddNewPackToList(this);
+        //GameManager.instance.AddNewPackToList(this);
 
         return true;
     }
@@ -141,9 +130,19 @@ public class CoinPack : MonoBehaviour
         return _coinList.ElementAt(0).CoinLevel;
     }
 
-    public void AddNewCoinsAfterMerge(CoinObject coinObject)
+    public void AddNewCoinsAfterMerge(ICoin coin)
     {
-        _coinList.Add(coinObject);
+        _coinList.Add(coin);
+    }
+
+    private void AddItemToCoinList(ICoin coin)
+    {
+        _coinList.Add(coin);
+    }
+
+    public void RemoveItemToCoinList(ICoin coin)
+    {
+        _coinList.Remove(coin);
     }
 }
 

@@ -1,9 +1,6 @@
-using UnityEngine;
-
 public interface ICoinBuilder
 {
-    ICoinBuilder SetColor(Color color);
+    ICoinBuilder SetColor(Colors color);
     ICoinBuilder SetLevel(int level);
-    Coin Build();
-
+    ICoin Build();
 }
