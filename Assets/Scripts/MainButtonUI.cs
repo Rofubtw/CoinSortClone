@@ -26,7 +26,7 @@ public class MainButtonUI : MonoBehaviour
         });
         dealButton.onClick.AddListener(() =>
         {
-            Debug.Log("A");
+            OnCoinDeal?.Invoke();
         });
     }
 }

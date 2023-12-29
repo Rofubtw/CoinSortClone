@@ -15,5 +15,4 @@ public class CoinDirector
     {
         return _coinBuilder.SetLevel(coinLevel).SetColor(color).Build();
     }
-
 }

@@ -129,4 +129,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <CoinLevel>k__BackingField: 1
-  <Color>k__BackingField: {r: 1, g: 0.6, b: 0, a: 0}
+  <Color>k__BackingField: {r: 1, g: 0.6627451, b: 0, a: 0}

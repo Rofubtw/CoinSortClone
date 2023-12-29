@@ -173,7 +173,7 @@ Transform:
   m_GameObject: {fileID: 8342566513388203514}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.39, y: -1.94, z: -0.11}
+  m_LocalPosition: {x: -1.4, y: -2, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -196,6 +196,7 @@ MonoBehaviour:
   coinPrefab: {fileID: 9106430492745515473, guid: 2e0558c2c37aabf45a9986dc066fd56c,
     type: 3}
   coinPivotTransform: {fileID: 7814411067456080005}
+  _coinList: []
 --- !u!65 &1051728821947475527
 BoxCollider:
   m_ObjectHideFlags: 0
