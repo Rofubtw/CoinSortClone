@@ -5,7 +5,7 @@ using UnityEngine;
 public class CoinTransporter : MonoBehaviour
 {
     private List<CoinObject> _selectedCoinObjects;
-    private List<CoinObject> selectedPacksObjects;
+    private List<CoinObject> _selectedPacksObjects;
     private int _neededLevel;
 
     private const int  LIST_MAX_COIN_COUNT = 10;
@@ -41,7 +41,7 @@ public class CoinTransporter : MonoBehaviour
     private void SelectionManager_OnNextPackChoosed(ICoinHolder nextCoinPack)
     {
         if (AddCoins(nextCoinPack, out int neededCoinNumber))
-            RemoveCoins(neededCoinNumber, selectedPacksObjects);
+            RemoveCoins(neededCoinNumber, _selectedPacksObjects);
     }
 
     private void SelectionManager_OnSelectedPackChoosed(ICoinHolder selectedCoinPack)
@@ -51,7 +51,7 @@ public class CoinTransporter : MonoBehaviour
 
     private void SelectCoins(ICoinHolder selectedCoinPack)
     {
-        selectedPacksObjects = selectedCoinPack.GetCoinList();
+        _selectedPacksObjects = selectedCoinPack.GetCoinList();
         _selectedCoinObjects.Clear();
         int coinLevel = selectedCoinPack.GetCoinList()[^1].CoinLevel;
         

@@ -20,7 +20,6 @@ public class ObjectPoolManager : MonoBehaviour
     private void Awake()
     {
         SetupEmpties();
-        
     }
 
     private void SetupEmpties()
@@ -31,7 +30,7 @@ public class ObjectPoolManager : MonoBehaviour
         _coinObjectsEmpty.transform.SetParent(_objectPoolEmptyHolder.transform);
     }
 
-    public static GameObject SpawnObject(GameObject objectToSpawn, Coin coinInfo, PoolType poolType = PoolType.None)
+    public static GameObject SpawnObject(GameObject objectToSpawn, Vector3 startingPoint, Coin coinInfo, PoolType poolType = PoolType.None)
     {
         PooledObjectInfo pool = objectPools.Find(p => p.lookupInt == coinInfo.CoinLevel);
 
@@ -71,7 +70,7 @@ public class ObjectPoolManager : MonoBehaviour
             GameObject parentObject = SetParentObject(poolType);
 
             // If there are no inactive objects, create a new one
-            spawnableObj = Instantiate(objectToSpawn);
+            spawnableObj = Instantiate(objectToSpawn, startingPoint, Quaternion.identity);
 
             if (parentObject != null)
             {
@@ -82,13 +81,14 @@ public class ObjectPoolManager : MonoBehaviour
         {
             // If there is a inactive object, reactive it
             pool.inactiveObjects.Remove(spawnableObj);
+            spawnableObj.transform.position = startingPoint;
             spawnableObj.SetActive(true);
         }
 
         return spawnableObj;
     }
 
-    public static void ReturnObjectToPool(CoinObject coinObj)
+    public static void ReturnObjectToPool(CoinObject coinObj, Vector3 startingPoint)
     {
         PooledObjectInfo pool = objectPools.Find(p => p.lookupInt == coinObj.CoinLevel);
 
@@ -100,6 +100,7 @@ public class ObjectPoolManager : MonoBehaviour
         {
             coinObj.gameObject.SetActive(false);
             pool.inactiveObjects.Add(coinObj.gameObject);
+            coinObj.transform.position = startingPoint;
         }
     }
 

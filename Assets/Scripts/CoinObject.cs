@@ -6,6 +6,7 @@ public class CoinObject : MonoBehaviour
 {
     [field: SerializeField]
     public int CoinLevel { get; set; }
+
     [field: SerializeField]
     public Color Color { get; set; }
 
@@ -15,10 +16,5 @@ public class CoinObject : MonoBehaviour
     {
         meshRenderer = GetComponentInChildren<MeshRenderer>();
         meshRenderer.material.color = Color;
-    }
-
-    public void Move(Vector3 target)
-    {
-        transform.position = target;
     }
 }
